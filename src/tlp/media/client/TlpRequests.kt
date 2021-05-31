@@ -3,7 +3,7 @@ package tlp.media.client
 import okhttp3.HttpUrl
 import okhttp3.Request
 
-class TlpRequests(private val host: String, private val port: String) {
+class TlpRequests(private val host: String, private val port: Int) {
 
     fun latestMangas(page: Int, pageSize: Int = 60): Request {
         val httpUrl = urlBuilder()
@@ -49,7 +49,7 @@ class TlpRequests(private val host: String, private val port: String) {
         return HttpUrl.Builder()
             .scheme("http")
             .host(host)
-            .port(port.toInt())
+            .port(port)
             .addPathSegment("api")
     }
 }

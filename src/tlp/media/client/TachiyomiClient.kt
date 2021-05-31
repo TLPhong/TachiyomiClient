@@ -17,13 +17,13 @@ import uy.kohesive.injekt.api.get
 
 class TachiyomiClient : HttpSource(), ConfigurableSource {
     override val lang: String = "en"
-    override val supportsLatest: Boolean = true
     override val name: String = "Home server"
-    val host: String by lazy { preferences.getString(HOST_TITLE, HOST_DEFAULT)!! }
-    val port: String by lazy { preferences.getString(PORT_TITLE, PORT_DEFAULT)!! }
-    override val baseUrl: String by lazy { "http://$host:$port" }
+    override val supportsLatest: Boolean = true
+    val host: String by lazy { getPrefHost() }
+    val port: Int by lazy { getPrefPort() }
+    override val baseUrl: String by lazy { getPrefBaseUrl() }
 
-    private val requests = TlpRequests(host, port)
+    private val requests by lazy { TlpRequests(host, port) }
     private val parser = TlpResponseUtil()
 
     private val preferences: SharedPreferences by lazy {
@@ -87,30 +87,38 @@ class TachiyomiClient : HttpSource(), ConfigurableSource {
      * See Komga.setupPreferenceScreen
      */
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
-        screen.addPreference(screen.editTextPreference(HOST_TITLE, HOST_DEFAULT, baseUrl))
-        screen.addPreference(screen.editTextPreference(PORT_TITLE, PORT_DEFAULT, baseUrl))
+        screen.addPreference(screen.editTextPreference(HOST_TITLE, HOST_DEFAULT))
+        screen.addPreference(screen.editTextPreference(PORT_TITLE, PORT_DEFAULT.toString()))
     }
+
+    private fun getPrefBaseUrl(): String =
+        "http://$HOST_DEFAULT:$PORT_DEFAULT"
+
+    private fun getPrefHost(): String =
+        this.preferences.getString(HOST_TITLE, HOST_DEFAULT)!!
+
+    private fun getPrefPort(): Int =
+        this.preferences.getString(PORT_TITLE, PORT_DEFAULT.toString())!!.toInt()
 
     private fun androidx.preference.PreferenceScreen.editTextPreference(
         title: String,
-        default: String,
-        value: String,
-        isNumber: Boolean = false
+        default: String
     ): androidx.preference.EditTextPreference {
         return androidx.preference.EditTextPreference(context).apply {
             key = title
             this.title = title
-            summary = value
+            summary = ""
             this.setDefaultValue(default)
             dialogTitle = title
 
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val res = preferences.edit().putString(title, newValue as String).commit()
-                    Toast.makeText(context, "Restart Tachiyomi to apply new setting.", Toast.LENGTH_LONG).show()
-                    if (isNumber) {
-                        newValue.toInt() // Throw error here
-                    }
+                    Toast.makeText(
+                        context,
+                        "Restart Tachiyomi to apply new setting.",
+                        Toast.LENGTH_LONG
+                    ).show()
                     res
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -122,8 +130,8 @@ class TachiyomiClient : HttpSource(), ConfigurableSource {
 
     companion object {
         private const val HOST_TITLE = "Host"
-        private const val HOST_DEFAULT = ""
+        private const val HOST_DEFAULT = "192.168.86.3"
         private const val PORT_TITLE = "Port"
-        private const val PORT_DEFAULT = ""
+        private const val PORT_DEFAULT = 8080
     }
 }

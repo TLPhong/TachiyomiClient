@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlinx-serialization'
 
 ext {
-    extName = 'TLP'
+    extName = 'Tlp'
     pkgNameSuffix = 'all.tlp'
     extClass = '.TlpFactory'
     extVersionCode = 3
