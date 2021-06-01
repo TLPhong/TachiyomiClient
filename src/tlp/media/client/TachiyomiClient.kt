@@ -92,7 +92,7 @@ class TachiyomiClient : HttpSource(), ConfigurableSource {
     }
 
     private fun getPrefBaseUrl(): String =
-        "http://$HOST_DEFAULT:$PORT_DEFAULT"
+        "http://$host:$port"
 
     private fun getPrefHost(): String =
         this.preferences.getString(HOST_TITLE, HOST_DEFAULT)!!
